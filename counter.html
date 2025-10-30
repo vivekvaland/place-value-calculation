@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="gu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+    <title>સંખ્યાની ગમ્મત - ભાષા બદલવાનું બટન સાથે</title>
+    
+    <style>
+        /* ગૂગલ ફોન્ટ */
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Gujarati:wght@400;700;900&display=swap');
+
+        /* વીડિયો બેકગ્રાઉન્ડ માટે સેટઅપ */
+        #bg-video {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            min-width: 100%;
+            min-height: 100%;
+            width: auto;
+            height: auto;
+            transform: translate(-50%, -50%);
+            z-index: -2;
+            object-fit: cover;
+        }
+
+        body {
+            font-family: 'Noto Sans Gujarati', Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            position: relative;
+            overflow: hidden;
+            background-color: #333;
+        }
+
+        /* વીડિયો પર ડાર્ક ઓવરલે */
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: -1;
+        }
+
+        /* મુખ્ય કન્ટેનર (ગ્લાસ ઇફેક્ટ) */
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(12px);
+            border-radius: 25px;
+            padding: 35px 45px;
+            box-shadow: 0 10px 40px 0 rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            text-align: center;
+            color: white;
+            position: relative;
+            z-index: 1;
+            /* મોટી સ્ક્રીન માટે મહત્તમ પહોળાઈ */
+            max-width: 700px; 
+            width: 90%; 
+        }
+
+        h1 {
+            font-weight: 900;
+            text-shadow: 2px 2px 6px rgba(0,0,0,0.4);
+            letter-spacing: 1px;
+            margin-bottom: 30px;
+        }
+
+        /* આઉટપુટ એરિયા સ્ટાઇલ */
+        #output-area {
+            margin: 25px 0 35px 0;
+            padding: 25px;
+            min-height: 120px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            overflow: hidden; 
+        }
+
+        /* આઉટપુટનો નંબર */
+        #output-area p {
+            margin: 0;
+            font-size: 5rem; 
+            font-weight: 900;
+            color: #fff;
+            text-shadow: 3px 3px 10px rgba(0,0,0,0.5);
+            word-break: break-all;
+        }
+
+        /* જ્યારે નંબર બદલાય ત્યારે ફ્લેશ એનિમેશન */
+        .flash {
+            animation: flash 0.4s ease;
+        }
+
+        @keyframes flash {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.15); opacity: 0.8; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        /* બટન કન્ટેનર */
+        .button-container {
+            display: flex;
+            gap: 30px;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* બધા બટનો માટે કોમન સ્ટાઇલ */
+        .shape-btn {
+            font-family: 'Noto Sans Gujarati', sans-serif;
+            font-size: 24px;
+            font-weight: 700;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.4);
+            
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            line-height: 1; 
+            flex-shrink: 0; 
+        }
+
+        /* બટન પર માઉસ લઈ જતાં (Hover) ઇફેક્ટ */
+        .shape-btn:hover {
+            transform: scale(1.15) translateY(-8px);
+            box-shadow: 0 12px 25px rgba(0,0,0,0.4);
+            opacity: 1;
+        }
+        
+        .shape-btn:active, .shape-btn:focus {
+            transform: scale(1.05);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.5);
+        }
+
+        /* મુખ્ય બટન સ્ટાઇલ - યથાવત */
+        #triangle-btn {
+            width: 140px;
+            height: 140px;
+            background: #00bfff;
+            clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+            padding-top: 0; 
+            transform: translateY(20px);
+            border-radius: 0;
+            align-items: center; 
+        }
+        
+        #square-btn {
+            width: 140px;
+            height: 140px;
+            background: #ffc400;
+            border-radius: 25px;
+        }
+
+        #oval-btn {
+            width: 180px;
+            height: 130px;
+            background: #3cb371;
+            border-radius: 65px;
+        }
+
+        /* 🔥 અંકો બદલો બટન (નવો દેખાવ) */
+        #toggle-lang-btn {
+            background-color: #ff9900; 
+            color: black; 
+            font-weight: 900;
+            font-size: 28px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            
+            /* નાનો લંબચોરસ આકાર */
+            width: 80px; 
+            height: 40px; 
+            border-radius: 8px;
+            margin: 0 0 20px 0;
+            
+            /* Hover ઇફેક્ટ અલગ */
+            transform: none; 
+            transition: background-color 0.3s, transform 0.3s;
+        }
+        
+        #toggle-lang-btn:hover {
+            transform: scale(1.1); /* આ બટનને થોડો સ્કેલ અપ કરો */
+            background-color: #ffb84d;
+        }
+
+
+        /*
+        ====================================================
+        મોબાઇલ રિસ્પોન્સિવનેસ માટે મીડિયા ક્વેરી
+        ====================================================
+        */
+        @media screen and (max-width: 600px) {
+            
+            .container {
+                padding: 25px 20px;
+                margin: 20px;
+                max-width: 100%; 
+            }
+
+            h1 {
+                font-size: 1.8rem;
+                margin-bottom: 20px;
+            }
+
+            #output-area {
+                min-height: 90px;
+                padding: 15px;
+            }
+
+            #output-area p {
+                font-size: 3.5rem; 
+            }
+
+            .button-container {
+                flex-direction: column;
+                gap: 15px; 
+            }
+
+            .shape-btn {
+                font-size: 20px;
+                width: 100%; 
+                max-width: 250px; 
+                transform: none !important; 
+            }
+
+            #triangle-btn {
+                width: 200px;
+                height: 80px; /* ઊંચાઈ ઓછી કરવી */
+                clip-path: none; /* આકાર સરળ લંબચોરસ કરવો */
+                border-radius: 15px;
+                transform: none; /* ટ્રાન્સલેટ દૂર કરવું */
+            }
+            
+            #square-btn {
+                width: 200px;
+                height: 80px;
+                border-radius: 15px;
+            }
+
+            #oval-btn {
+                width: 250px;
+                height: 80px;
+                border-radius: 15px; /* લંબગોળને લંબચોરસ કરવો */
+            }
+            
+            .shape-btn:hover {
+                transform: scale(1.05);
+            }
+            
+             /* અંકો બદલો બટન (મોબાઇલ પર) */
+            #toggle-lang-btn {
+                 width: 80px;
+                 font-size: 20px;
+                 height: 35px;
+                 margin-top: 10px;
+            }
+        }
+
+    </style>
+</head>
+<body>
+
+    <video id="bg-video" autoplay loop muted playsinline>
+        <source src="istockphoto-1285360509-640_adpp_is.mp4" type="video/mp4">
+        તમારું બ્રાઉઝર વીડિયો ટેગને સપોર્ટ કરતું નથી.
+    </video>
+
+    <div class="container">
+        <h1>સંખ્યાની ગમ્મત</h1>
+        
+        <button id="toggle-lang-btn" class="shape-btn">1 / ૧</button>
+
+        <div id="output-area">
+            <p id="output-text">0</p>
+        </div>
+
+        <div class="button-container">
+            <button id="triangle-btn" class="shape-btn">એકમ</button>
+            <button id="square-btn" class="shape-btn">દશક</button>
+            <button id="oval-btn" class="shape-btn">સો</button>
+        </div>
+        </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+
+            const triangleBtn = document.getElementById("triangle-btn");
+            const squareBtn = document.getElementById("square-btn");
+            const ovalBtn = document.getElementById("oval-btn");
+            const toggleLangBtn = document.getElementById("toggle-lang-btn");
+            const outputText = document.getElementById("output-text");
+            const outputArea = document.getElementById("output-area");
+
+            // ગુજરાતી અને અંગ્રેજી અંકોનો મેપ
+            const gujaratiDigits = ['૦', '૧', '૨', '૩', '૪', '૫', '૬', '૭', '૮', '૯'];
+            const englishDigits = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
+
+            let triangleCounter = 0;
+            let squareCounter = 0;
+            let ovalCounter = 0;
+            let isEnglish = true; // હાલમાં અંગ્રેજી અંકો છે
+
+            // ----------------------------------------------------
+            // I. ભાષા રૂપાંતર ફંક્શન્સ
+            // ----------------------------------------------------
+
+            // વર્તમાન કન્ટેન્ટને બીજી ભાષામાં બદલો
+            function toggleNumerals(content) {
+                let currentDigits = isEnglish ? englishDigits : gujaratiDigits;
+                let targetDigits = isEnglish ? gujaratiDigits : englishDigits;
+                
+                let newContent = content;
+
+                for (let i = 0; i < 10; i++) {
+                    // 1. વર્તમાન અંકને પહેલા ટેમ્પરરી મૂલ્યમાં બદલો 
+                    newContent = newContent.replaceAll(currentDigits[i], 'TEMP_DIGIT_' + i);
+                }
+
+                 for (let i = 0; i < 10; i++) {
+                    // 2. ટેમ્પરરી મૂલ્યને ટાર્ગેટ અંકમાં બદલો
+                    newContent = newContent.replaceAll('TEMP_DIGIT_' + i, targetDigits[i]);
+                }
+                
+                return newContent;
+            }
+
+            // અંગ્રેજીમાંથી ગુજરાતીમાં અંક રૂપાંતર (બટન ક્લિક પર પ્રદર્શન માટે)
+            function convertToGujarati(text) {
+                let convertedText = text;
+                for (let i = 0; i < 10; i++) {
+                    convertedText = convertedText.replaceAll(englishDigits[i], gujaratiDigits[i]);
+                }
+                return convertedText;
+            }
+
+            // ----------------------------------------------------
+            // II. આઉટપુટ અને બટન લોજિક
+            // ----------------------------------------------------
+
+            function updateOutput(value) {
+                // ફ્લેશ એનિમેશન
+                outputArea.classList.remove("flash");
+                void outputArea.offsetWidth; 
+                outputArea.classList.add("flash");
+                
+                let displayValue = value.toString();
+                
+                // જો ગુજરાતી મોડ ચાલુ હોય, તો રૂપાંતર કરો
+                if (!isEnglish) {
+                   displayValue = convertToGujarati(displayValue);
+                }
+
+                outputText.textContent = displayValue;
+            }
+
+            // પ્રારંભિક ટેક્સ્ટ સેટ કરો
+            updateOutput(0);
+
+            // 🔥 ભાષા બદલવાનું બટન
+            toggleLangBtn.addEventListener("click", function() {
+                let currentContent = outputText.textContent;
+                
+                // વર્તમાન કન્ટેન્ટને નવી ભાષામાં બદલો
+                outputText.textContent = toggleNumerals(currentContent);
+                
+                // સ્ટેટસ બદલો
+                isEnglish = !isEnglish; 
+            });
+
+
+            // એકમ બટન
+            triangleBtn.addEventListener("click", function() {
+                triangleCounter = (triangleCounter % 9) + 1; // 1 થી 9
+                updateOutput(triangleCounter);
+            });
+
+            // દશક બટન
+            squareBtn.addEventListener("click", function() {
+                squareCounter = (squareCounter % 9) + 1; // 1 થી 9
+                updateOutput(squareCounter * 10);
+            });
+
+            // સો બટન
+            ovalBtn.addEventListener("click", function() {
+                ovalCounter = (ovalCounter % 9) + 1; // 1 થી 9
+                updateOutput(ovalCounter * 100);
+            });
+            
+            // 💡 નોટ: આ વર્તમાન કોડ માત્ર છેલ્લે ક્લિક કરેલા સ્થાનનું મૂલ્ય દર્શાવે છે. 
+            // જો ત્રણેયનું સંયુક્ત મૂલ્ય (દા.ત. 123) દર્શાવવું હોય, તો લોજિક બદલવું પડશે.
+
+        });
+    </script>
+
+</body>
+</html>
